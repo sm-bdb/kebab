@@ -131,9 +131,9 @@ class KebabReviewApp {
 
         return `
             <div class="bg-gray-900 border border-gray-800 rounded-lg p-6 hover:border-gray-700 transition-all duration-200">
-                <div class="flex justify-between items-start mb-4">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4 mb-4">
                     <div class="flex-1">
-                        <div class="flex items-center gap-3 mb-2">
+                        <div class="flex items-center gap-3 mb-2 flex-wrap">
                             <h2 class="text-2xl font-bold text-white tracking-tight">${restaurant.name}</h2>
                             ${averages.overallAverage > 0 ? `
                                 <span class="flex items-center gap-1 text-lg font-bold text-verge-green">
@@ -144,7 +144,7 @@ class KebabReviewApp {
                         <p class="text-gray-400 font-medium">Bezocht: ${visitationDate}</p>
                     </div>
                     <button id="review-btn-${restaurant.id}"
-                            class="bg-verge-green hover:bg-green-300 text-black px-4 py-2 rounded font-semibold text-sm transition-all duration-200">
+                            class="bg-verge-green hover:bg-green-300 text-black px-4 py-2 rounded font-semibold text-sm transition-all duration-200 whitespace-nowrap shrink-0">
                         + Review toevoegen
                     </button>
                 </div>
