@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kebab Restaurant Reviews</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=__PolySans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Inter', 'system-ui', 'sans-serif'],
+                        'poly': ['__PolySans', 'Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        'verge-green': '#00FF41',
+                        'verge-purple': '#6B46C1',
+                    }
+                }
+            }
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-black min-h-screen font-sans">
+    <div class="max-w-6xl mx-auto px-4 py-8">
+        <header class="mb-12">
+            <h1 class="text-5xl font-bold text-white mb-4 tracking-tight">🥙 Alfabetische kebabtour</h1>
+        </header>
+
+        <main>
+            <!-- Restaurant List -->
+            <div id="restaurant-list" class="space-y-6">
+                <!-- Restaurants will be loaded here dynamically -->
+            </div>
+        </main>
+
+        <!-- Review Modal -->
+        <div id="review-modal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center p-4">
+            <div class="bg-gray-900 border border-gray-700 rounded-lg max-w-2xl w-full max-h-screen overflow-y-auto">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 id="modal-title" class="text-2xl font-bold text-white tracking-tight">Review toevoegen</h2>
+                        <button id="close-modal" class="text-gray-400 hover:text-white">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <form id="review-form">
+                        <!-- Username input -->
+                        <div class="mb-6">
+                            <label for="username" class="block text-sm font-semibold text-verge-green mb-2">Gebruikersnaam</label>
+                            <input type="text" id="username" name="username" required
+                                   class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white focus:outline-none focus:ring-2 focus:ring-verge-green focus:border-verge-green">
+                        </div>
+
+                        <!-- Criteria ratings -->
+                        <div id="criteria-section" class="mb-6">
+                            <h3 class="text-lg font-bold text-white mb-4 tracking-tight">Beoordeling per criterium</h3>
+                            <div id="criteria-list">
+                                <!-- Criteria will be loaded here dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Comment -->
+                        <div class="mb-6">
+                            <label for="comment" class="block text-sm font-semibold text-verge-green mb-2">Opmerking (optioneel)</label>
+                            <textarea id="comment" name="comment" rows="4"
+                                      class="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded text-white focus:outline-none focus:ring-2 focus:ring-verge-green focus:border-verge-green"
+                                      placeholder="Voeg hier je opmerking toe..."></textarea>
+                        </div>
+
+                        <!-- Submit button -->
+                        <div class="flex justify-end">
+                            <button type="submit" class="bg-verge-green hover:bg-green-300 text-black font-semibold py-2 px-4 rounded transition-all duration-200">
+                                Review opslaan
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

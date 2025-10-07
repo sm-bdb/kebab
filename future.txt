@@ -1,0 +1,2 @@
+FUTURE
+* Make reviews user made in current session editable
