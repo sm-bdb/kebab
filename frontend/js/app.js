@@ -15,9 +15,11 @@ class KebabReviewApp {
 
     async loadData() {
         try {
-            // Load restaurants and criteria
-            this.restaurants = await api.getRestaurants();
-            this.criteria = await api.getCriteria();
+            // Load restaurants and criteria in parallel
+            [this.restaurants, this.criteria] = await Promise.all([
+                api.getRestaurants(),
+                api.getCriteria()
+            ]);
         } catch (error) {
             console.error('Error loading data:', error);
             this.showError('Fout bij het laden van gegevens. Controleer je internetverbinding.');
@@ -62,10 +64,13 @@ class KebabReviewApp {
 
             const restaurantCards = await Promise.all(
                 sortedRestaurants.map(async (restaurant) => {
-                    const averages = await api.getAverageRatings(restaurant.id);
-                    const reviews = await api.getReviewsForRestaurant(restaurant.id);
+                    // Run both API calls in parallel
+                    const [averages, reviews] = await Promise.all([
+                        api.getAverageRatings(restaurant.id),
+                        api.getReviewsForRestaurant(restaurant.id)
+                    ]);
                     const commentsWithContent = reviews.filter(r => r.comment && r.comment.trim());
-                    
+
                     return await this.createRestaurantCard(restaurant, averages, commentsWithContent);
                 })
             );

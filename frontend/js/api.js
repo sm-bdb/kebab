@@ -89,6 +89,7 @@ class SupabaseAPI {
         if (reviews.length === 0) return { criteriaAverages: {}, overallAverage: 0 };
 
         const reviewIds = reviews.map(r => r.id);
+        // Note: Already optimized - we need the reviews first to get reviewIds
         const reviewDetails = await this.getReviewDetails(reviewIds);
 
         // Calculate averages per criterium
