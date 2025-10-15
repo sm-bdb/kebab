@@ -38,47 +38,12 @@ class SupabaseAPI {
         const { data, error } = await this.client
             .from('criteria')
             .select('*, themes(*)');
-        
+
         if (error) {
             console.error('Error fetching criteria:', error);
             throw error;
         }
-        
-        return data;
-    }
 
-    // Get reviews for a specific restaurant
-    async getReviewsForRestaurant(restaurantId) {
-        const { data, error } = await this.client
-            .from('reviews')
-            .select('*')
-            .eq('restaurant_id', restaurantId);
-        
-        if (error) {
-            console.error('Error fetching reviews:', error);
-            throw error;
-        }
-        
-        return data;
-    }
-
-    // Get review details with criteria for reviews
-    async getReviewDetails(reviewIds = null) {
-        let query = this.client
-            .from('review_details')
-            .select('*, criteria(*)');
-        
-        if (reviewIds && reviewIds.length > 0) {
-            query = query.in('review_id', reviewIds);
-        }
-        
-        const { data, error } = await query;
-        
-        if (error) {
-            console.error('Error fetching review details:', error);
-            throw error;
-        }
-        
         return data;
     }
 
