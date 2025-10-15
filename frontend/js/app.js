@@ -3,6 +3,7 @@ class KebabReviewApp {
     constructor() {
         this.restaurants = [];
         this.criteria = [];
+        this.themes = [];
         this.currentRestaurantId = null;
         this.init();
     }
@@ -15,10 +16,11 @@ class KebabReviewApp {
 
     async loadData() {
         try {
-            // Load restaurants and criteria in parallel
-            [this.restaurants, this.criteria] = await Promise.all([
+            // Load restaurants, criteria, and themes in parallel
+            [this.restaurants, this.criteria, this.themes] = await Promise.all([
                 api.getRestaurants(),
-                api.getCriteria()
+                api.getCriteria(),
+                api.getThemesWithCriteria()
             ]);
         } catch (error) {
             console.error('Error loading data:', error);
@@ -46,6 +48,24 @@ class KebabReviewApp {
         });
     }
 
+    transformRestaurantData(restaurantData) {
+        // Transform the view data to the format expected by createRestaurantCard
+        const criteriaAverages = {};
+
+        if (restaurantData.criterium_averages && Array.isArray(restaurantData.criterium_averages)) {
+            restaurantData.criterium_averages.forEach(criterium => {
+                if (criterium.average_rating !== null) {
+                    criteriaAverages[criterium.criterium_name] = criterium.average_rating;
+                }
+            });
+        }
+
+        return {
+            criteriaAverages,
+            overallAverage: restaurantData.average_rating || 0
+        };
+    }
+
     async renderRestaurantList() {
         const container = document.getElementById('restaurant-list');
         container.innerHTML = '<div class="text-center">Restaurants laden...</div>';
@@ -57,19 +77,21 @@ class KebabReviewApp {
                 if (!a.visitation_date && !b.visitation_date) return 0;
                 if (!a.visitation_date) return 1;
                 if (!b.visitation_date) return -1;
-                
+
                 // Sort by date descending
                 return new Date(b.visitation_date) - new Date(a.visitation_date);
             });
 
             const restaurantCards = await Promise.all(
                 sortedRestaurants.map(async (restaurant) => {
-                    // Run both API calls in parallel
-                    const [averages, reviews] = await Promise.all([
-                        api.getAverageRatings(restaurant.id),
-                        api.getReviewsForRestaurant(restaurant.id)
-                    ]);
-                    const commentsWithContent = reviews.filter(r => r.comment && r.comment.trim());
+                    // Fetch restaurant data with averages using the view (single API call)
+                    const restaurantData = await api.getRestaurantWithAverages(restaurant.id);
+
+                    // Transform the data from the view to the format expected by createRestaurantCard
+                    const averages = this.transformRestaurantData(restaurantData);
+
+                    // Get comments from the view data
+                    const commentsWithContent = restaurantData.comments || [];
 
                     return await this.createRestaurantCard(restaurant, averages, commentsWithContent);
                 })
@@ -98,11 +120,11 @@ class KebabReviewApp {
     }
 
     async createRestaurantCard(restaurant, averages, comments) {
-        const visitationDate = restaurant.visitation_date 
+        const visitationDate = restaurant.visitation_date
             ? new Date(restaurant.visitation_date).toLocaleDateString('nl-NL')
             : 'Nog niet bezocht';
 
-        const criteriaByTheme = await this.groupCriteriaByTheme(averages.criteriaAverages);
+        const criteriaByTheme = this.groupCriteriaByTheme(averages.criteriaAverages);
         const criteriaList = Object.entries(criteriaByTheme)
             .map(([theme, criteria]) => 
                 `<div class="mb-3">
@@ -174,11 +196,10 @@ class KebabReviewApp {
         `;
     }
 
-    async groupCriteriaByTheme(criteriaAverages) {
-        const themes = await api.getThemesWithCriteria();
+    groupCriteriaByTheme(criteriaAverages) {
         const grouped = {};
-        
-        themes.forEach(theme => {
+
+        this.themes.forEach(theme => {
             theme.criteria.forEach(criterium => {
                 if (criteriaAverages[criterium.name]) {
                     if (!grouped[theme.name]) {
@@ -188,7 +209,7 @@ class KebabReviewApp {
                 }
             });
         });
-        
+
         return grouped;
     }
 
@@ -222,28 +243,26 @@ class KebabReviewApp {
         commentsDiv.classList.toggle('hidden');
     }
 
-    async openReviewModal(restaurant) {
+    openReviewModal(restaurant) {
         this.currentRestaurantId = restaurant.id;
         document.getElementById('modal-title').textContent = `Review voor ${restaurant.name}`;
-        
+
         // Reset form
         document.getElementById('review-form').reset();
-        
+
         // Load criteria grouped by theme
-        await this.renderCriteriaForm();
-        
+        this.renderCriteriaForm();
+
         // Show modal
         document.getElementById('review-modal').classList.remove('hidden');
         document.getElementById('review-modal').classList.add('flex');
     }
 
-    async renderCriteriaForm() {
+    renderCriteriaForm() {
         const container = document.getElementById('criteria-list');
-        
+
         try {
-            const themes = await api.getThemesWithCriteria();
-            
-            const criteriaHtml = themes.map(theme => {
+            const criteriaHtml = this.themes.map(theme => {
                 const criteriaItems = theme.criteria.map(criterium => `
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-300 mb-2">${criterium.name}</label>

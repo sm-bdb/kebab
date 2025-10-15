@@ -82,46 +82,20 @@ class SupabaseAPI {
         return data;
     }
 
-    // Get average ratings for a restaurant
-    async getAverageRatings(restaurantId) {
-        // Get all reviews for the restaurant
-        const reviews = await this.getReviewsForRestaurant(restaurantId);
-        if (reviews.length === 0) return { criteriaAverages: {}, overallAverage: 0 };
+    // Get restaurant with averages from the combined view
+    async getRestaurantWithAverages(restaurantId) {
+        const { data, error } = await this.client
+            .from('restaurant_averages_combined')
+            .select('*')
+            .eq('restaurant_id', restaurantId)
+            .single();
 
-        const reviewIds = reviews.map(r => r.id);
-        // Note: Already optimized - we need the reviews first to get reviewIds
-        const reviewDetails = await this.getReviewDetails(reviewIds);
+        if (error) {
+            console.error('Error fetching restaurant averages:', error);
+            throw error;
+        }
 
-        // Calculate averages per criterium
-        const criteriaAverages = {};
-        const criteriaGroups = {};
-
-        reviewDetails.forEach(detail => {
-            const criteriumId = detail.criterium_id;
-            const criteriumName = detail.criteria.name;
-            
-            if (!criteriaGroups[criteriumId]) {
-                criteriaGroups[criteriumId] = {
-                    name: criteriumName,
-                    ratings: []
-                };
-            }
-            criteriaGroups[criteriumId].ratings.push(detail.rating);
-        });
-
-        Object.keys(criteriaGroups).forEach(criteriumId => {
-            const group = criteriaGroups[criteriumId];
-            const average = group.ratings.reduce((sum, rating) => sum + rating, 0) / group.ratings.length;
-            criteriaAverages[group.name] = Math.round(average * 10) / 10; // Round to 1 decimal
-        });
-
-        // Calculate overall average
-        const allRatings = reviewDetails.map(detail => detail.rating);
-        const overallAverage = allRatings.length > 0 
-            ? Math.round((allRatings.reduce((sum, rating) => sum + rating, 0) / allRatings.length) * 10) / 10
-            : 0;
-
-        return { criteriaAverages, overallAverage };
+        return data;
     }
 
     // Create a new review
